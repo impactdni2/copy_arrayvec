@@ -1,4 +1,11 @@
 //! [`Copy`] arrayvec, does what it says on the tin
+//!
+
+#![cfg_attr(not(feature = "std"), no_std)]
+
+#[cfg(not(feature = "std"))]
+extern crate core as std;
+
 use std::{
     mem::MaybeUninit,
     ops::{Deref, DerefMut},
@@ -353,7 +360,10 @@ mod tests {
         }
         assert_eq!(
             arr.deref(),
-            (0..20).map(|x| x * x).collect::<Vec<usize>>().deref()
+            (0..20)
+                .map(|x| x * x)
+                .collect::<CopyArrayVec<usize, 20>>()
+                .deref()
         );
     }
 
