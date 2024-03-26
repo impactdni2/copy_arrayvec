@@ -73,7 +73,7 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
     /// ```
 
     pub fn try_push(&mut self, el: T) -> Result<(), T> {
-        if self.len_remaining() > 0 {
+        if self.capacity_remaining() > 0 {
             self.push(el);
             Ok(())
         } else {
@@ -147,7 +147,16 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
             self.len += 1;
         }
     }
-    pub fn len_remaining(&self) -> usize {
+    /// The remaining capacity of the [`CopyArrayVec`]
+    ///
+    /// ```
+    /// # use copy_arrayvec::CopyArrayVec;
+    /// let mut arr = CopyArrayVec::<_, 5>::new();
+    /// assert_eq!(arr.capacity_remaining(), 5);
+    /// arr.push(2);
+    /// assert_eq!(arr.capacity_remaining(), 4);
+    /// ```
+    pub fn capacity_remaining(&self) -> usize {
         MAX - self.len()
     }
 
