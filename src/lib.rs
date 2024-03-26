@@ -172,6 +172,16 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
 
     /// Remove all elements
     ///
+    /// ```
+    /// # use copy_arrayvec::CopyArrayVec;
+    /// let mut arr = CopyArrayVec::<_, 3>::new();
+    /// arr.push(2);
+    /// arr.push(3);
+    /// assert_eq!(arr.len(), 2);
+    /// arr.clear();
+    /// assert_eq!(arr.len(), 0);
+    /// ```
+    ///
     /// # Complexity
     /// This is an O(1) operation as it does not have
     /// to drop anything
