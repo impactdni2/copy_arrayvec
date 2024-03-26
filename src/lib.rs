@@ -30,12 +30,21 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
     pub fn new() -> Self {
         Self::default()
     }
+    /// Get the length
     pub fn len(&self) -> usize {
         self.len
     }
+    /// Check if empty
     pub fn is_empty(&self) -> bool {
         self.len == 0
     }
+    /// Push a new element
+    ///
+    /// # Panics
+    /// If the [`CopyArrayVec`] is full
+    ///
+    /// # Complexity
+    /// O(1)
     pub fn push(&mut self, el: T) {
         assert!(self.len() < MAX, "tried to push to full arrayvec");
 
@@ -43,6 +52,7 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
         self.buf[next].write(el);
         self.len += 1;
     }
+    /// Pop an element from the back
     pub fn pop(&mut self) -> Option<T> {
         if self.is_empty() {
             None
@@ -50,6 +60,11 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
             Some(self.remove(self.len - 1))
         }
     }
+    /// Remove an element from a specific position
+    ///
+    /// # Complexity Notes
+    /// This is _technically_ O(n) worst case algorithmically
+    /// but it is a single memcpy in reality due to the [`Copy`] bound
     pub fn remove(&mut self, i: usize) -> T {
         let v = self[i];
         unsafe {
@@ -59,6 +74,9 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
         self.len -= 1;
         v
     }
+    /// Insert an element at a specific position
+    ///
+    /// Has the same complexity bounds as [`CopyArrayVec::remove`]
     pub fn insert(&mut self, i: usize, value: T) {
         if i == self.len() {
             self.push(value);
@@ -73,6 +91,12 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
     pub fn len_remaining(&self) -> usize {
         MAX - self.len()
     }
+
+    /// Remove all elements
+    ///
+    /// # Complexity
+    /// This is an O(1) operation as it does not have
+    /// to drop anything
     pub fn clear(&mut self) {
         // this is trivial because we know that `T` does not require drop we can just
         // reset our write head
@@ -130,6 +154,10 @@ mod tests {
 
     use crate::CopyArrayVec;
 
+    fn upto_vec<const M: usize>() -> CopyArrayVec<usize, M> {
+        (0..M).collect()
+    }
+
     #[test]
     fn create_and_push() {
         let mut arr = CopyArrayVec::<_, 10>::new();
@@ -149,7 +177,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "tried to push to full arrayvec")]
     fn pushing_to_full_panics() {
         let mut arr = CopyArrayVec::<_, 1>::new();
         arr.push(0);
@@ -171,5 +199,12 @@ mod tests {
             *el *= i;
         }
         assert_eq!(arr.deref(), (0..20).map(|x| x * x).collect::<Vec<usize>>().deref());
+    }
+
+    #[test]
+    fn remove_at_start() {
+        let mut arr = upto_vec::<10>();
+        arr.remove(0);
+        assert_eq!(arr, upto_vec::<10>().iter().skip(1).copied().collect::<CopyArrayVec<_, 10>>());
     }
 }
