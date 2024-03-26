@@ -4,6 +4,9 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
+#[cfg(feature = "serde")]
+mod serde;
+
 /// A [`Vec`]-like datastructure backed by an [`array`] with [`Copy`] elements
 ///
 /// This is similar to the [`arrayvec`] `ArrayVec` but it is [`Copy`] and imposes
