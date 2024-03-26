@@ -155,6 +155,7 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
     /// Has the same complexity bounds as [`CopyArrayVec::remove`]
     pub fn insert(&mut self, i: usize, value: T) {
         assert!(!self.is_full(), "tried to insert into a full CopyArrayVec");
+        assert!(i <= self.len(), "insert out of bounds {i} > {}", self.len());
         if i == self.len() {
             self.push(value);
         } else {
@@ -357,5 +358,11 @@ mod tests {
                 .copied()
                 .collect::<CopyArrayVec<_, 10>>()
         );
+    }
+    #[test]
+    #[should_panic(expected = "insert out of bounds 3 > 0")]
+    fn insert_out_of_bounds() {
+        let mut arr = CopyArrayVec::<_, 1>::new();
+        arr.insert(3, 0);
     }
 }
