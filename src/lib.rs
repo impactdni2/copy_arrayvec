@@ -126,6 +126,8 @@ impl<T: Copy, const MAX: usize> FromIterator<T> for CopyArrayVec<T, MAX> {
 
 #[cfg(test)]
 mod tests {
+    use std::ops::Deref;
+
     use crate::CopyArrayVec;
 
     #[test]
@@ -152,5 +154,22 @@ mod tests {
         let mut arr = CopyArrayVec::<_, 1>::new();
         arr.push(0);
         arr.push(1);
+    }
+
+    #[test]
+    fn iterate() {
+        let arr = (0..20).collect::<CopyArrayVec<usize, 20>>();
+        for (i, el) in arr.iter().enumerate() {
+            assert_eq!(i, *el);
+        }
+    }
+
+    #[test]
+    fn iterate_mut() {
+        let mut arr = (0..20).collect::<CopyArrayVec<usize, 20>>();
+        for (i, el) in arr.iter_mut().enumerate() {
+            *el *= i;
+        }
+        assert_eq!(arr.deref(), (0..20).map(|x| x * x).collect::<Vec<usize>>().deref());
     }
 }
