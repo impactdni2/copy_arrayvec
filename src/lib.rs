@@ -43,8 +43,16 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
     /// # Panics
     /// If the [`CopyArrayVec`] is full
     ///
+    /// ```should_panic
+    /// # use copy_arrayvec::CopyArrayVec;
+    /// let mut arr = CopyArrayVec::<_, 0>::new();
+    /// arr.push(5);
+    /// ```
+    ///
     /// # Complexity
     /// O(1)
+    ///
+    ///
     pub fn push(&mut self, el: T) {
         assert!(self.len() < MAX, "tried to push to full arrayvec");
 
@@ -52,7 +60,35 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
         self.buf[next].write(el);
         self.len += 1;
     }
+
+    /// Attempt to push a new element
+    ///
+    /// This will return an Err if the [`CopyArrayVec`] is full
+    ///
+    /// ```rust
+    /// # use copy_arrayvec::CopyArrayVec;
+    /// let mut arr = CopyArrayVec::<_, 1>::new();
+    /// arr.push(5);
+    /// assert_eq!(arr.try_push(0), Err(0));
+    /// ```
+
+    pub fn try_push(&mut self, el: T) -> Result<(), T> {
+        if self.len_remaining() > 0 {
+            self.push(el);
+            Ok(())
+        } else {
+            Err(el)
+        }
+    }
+
     /// Pop an element from the back
+    ///
+    /// ```rust
+    /// # use copy_arrayvec::CopyArrayVec;
+    /// let mut arr = CopyArrayVec::<_, 1>::new();
+    /// arr.push(1);
+    /// assert_eq!(arr.pop(), Some(1));
+    /// ```
     pub fn pop(&mut self) -> Option<T> {
         if self.is_empty() {
             None
@@ -61,6 +97,29 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
         }
     }
     /// Remove an element from a specific position
+    ///
+    /// ```rust
+    /// # use copy_arrayvec::CopyArrayVec;
+    /// let mut arr = CopyArrayVec::<_, 5>::new();
+    /// arr.push(4);
+    /// arr.push(2);
+    /// arr.push(5);
+    ///
+    /// assert_eq!(arr.remove(1), 2);
+    /// assert_eq!(arr[0], 4);
+    /// assert_eq!(arr[1], 5);
+    /// ```
+    ///
+    /// # Panics
+    /// If `i` is out of range
+    ///
+    /// ```should_panic
+    /// # use copy_arrayvec::CopyArrayVec;
+    /// let mut arr = CopyArrayVec::<_, 5>::new();
+    /// arr.push(4);
+    /// arr.remove(1);
+    /// ```
+    ///
     ///
     /// # Complexity Notes
     /// This is _technically_ O(n) worst case algorithmically
