@@ -31,11 +31,11 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
         Self::default()
     }
     /// Get the length
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.len
     }
     /// Check if empty
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.len == 0
     }
     /// Push a new element
@@ -156,8 +156,18 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
     /// arr.push(2);
     /// assert_eq!(arr.capacity_remaining(), 4);
     /// ```
-    pub fn capacity_remaining(&self) -> usize {
+    pub const fn capacity_remaining(&self) -> usize {
         MAX - self.len()
+    }
+    /// The max capacity of the [`CopyArrayVec`]
+    ///
+    /// ```
+    /// # use copy_arrayvec::CopyArrayVec;
+    /// let mut arr = CopyArrayVec::<usize, 2>::new();
+    /// assert_eq!(arr.capacity(), 2);
+    /// ```
+    pub const fn capacity(&self) -> usize {
+        MAX
     }
 
     /// Remove all elements
