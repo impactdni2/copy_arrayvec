@@ -135,8 +135,26 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
     }
     /// Insert an element at a specific position
     ///
+    /// # Panics
+    /// If `i` is out of bounds or if the [`CopyArrayVec`] is full
+    ///
+    /// ```should_panic
+    /// # use copy_arrayvec::CopyArrayVec;
+    /// let mut arr = CopyArrayVec::<_, 1>::new();
+    /// arr.insert(3, 0);
+    /// ```
+    ///
+    /// ```should_panic
+    /// # use copy_arrayvec::CopyArrayVec;
+    /// let mut arr = CopyArrayVec::<_, 1>::new();
+    /// arr.push(4);
+    /// arr.insert(0, 2);
+    /// ```
+    ///
+    /// # Complexity
     /// Has the same complexity bounds as [`CopyArrayVec::remove`]
     pub fn insert(&mut self, i: usize, value: T) {
+        assert!(!self.is_full(), "tried to insert into a full CopyArrayVec");
         if i == self.len() {
             self.push(value);
         } else {
@@ -145,6 +163,27 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
                 std::ptr::copy(buf_p.cast_const(), buf_p.add(1), self.len - i);
             }
             self.len += 1;
+        }
+    }
+
+    /// Try to insert and error on full
+    ///
+    /// ```
+    /// # use copy_arrayvec::CopyArrayVec;
+    /// let mut arr = CopyArrayVec::<_, 1>::new();
+    /// arr.push(3);
+    /// assert_eq!(arr.try_insert(0, 4), Err(4));
+    /// ```
+    ///
+    /// # Panics
+    /// If `i` is out of bounds
+
+    pub fn try_insert(&mut self, i: usize, value: T) -> Result<(), T> {
+        if self.is_full() {
+            Err(value)
+        } else {
+            self.insert(i, value);
+            Ok(())
         }
     }
     /// The remaining capacity of the [`CopyArrayVec`]
@@ -158,6 +197,20 @@ impl<T: Copy, const MAX: usize> CopyArrayVec<T, MAX> {
     /// ```
     pub const fn capacity_remaining(&self) -> usize {
         MAX - self.len()
+    }
+
+    /// Check if the [`CopyArrayVec`] is full
+    ///
+    /// ```
+    /// # use copy_arrayvec::CopyArrayVec;
+    /// let mut arr = CopyArrayVec::<_, 2>::new();
+    /// arr.push(0);
+    /// assert!(!arr.is_full());
+    /// arr.push(1);
+    /// assert!(arr.is_full());
+    /// ```
+    pub const fn is_full(&self) -> bool {
+        self.capacity_remaining() == 0
     }
     /// The max capacity of the [`CopyArrayVec`]
     ///
@@ -286,13 +339,23 @@ mod tests {
         for (i, el) in arr.iter_mut().enumerate() {
             *el *= i;
         }
-        assert_eq!(arr.deref(), (0..20).map(|x| x * x).collect::<Vec<usize>>().deref());
+        assert_eq!(
+            arr.deref(),
+            (0..20).map(|x| x * x).collect::<Vec<usize>>().deref()
+        );
     }
 
     #[test]
     fn remove_at_start() {
         let mut arr = upto_vec::<10>();
         arr.remove(0);
-        assert_eq!(arr, upto_vec::<10>().iter().skip(1).copied().collect::<CopyArrayVec<_, 10>>());
+        assert_eq!(
+            arr,
+            upto_vec::<10>()
+                .iter()
+                .skip(1)
+                .copied()
+                .collect::<CopyArrayVec<_, 10>>()
+        );
     }
 }
