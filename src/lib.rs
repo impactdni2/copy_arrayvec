@@ -1,8 +1,16 @@
+//! [`Copy`] arrayvec, does what it says on the tin
 use std::{
     mem::MaybeUninit,
     ops::{Deref, DerefMut},
 };
 
+/// A [`Vec`]-like datastructure backed by an [`array`] with [`Copy`] elements
+///
+/// This is similar to the [`arrayvec`] `ArrayVec` but it is [`Copy`] and imposes
+/// that on its elements. This not only allows using it in more contexts but also
+/// enables some optimisations due to not needing to call [`Drop`]
+///
+/// [`arrayvec`]: https://docs.rs/arrayvec/latest/arrayvec/struct.ArrayVec.html
 #[derive(Clone, Copy)]
 pub struct CopyArrayVec<T: Copy, const MAX: usize> {
     buf: [MaybeUninit<T>; MAX],
