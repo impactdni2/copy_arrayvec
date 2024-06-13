@@ -308,6 +308,41 @@ impl<T: Copy, const MAX: usize> FromIterator<T> for CopyArrayVec<T, MAX> {
     }
 }
 
+
+impl<T: Copy, const CAP: usize> PartialOrd for CopyArrayVec<T, CAP>
+where
+    T: PartialOrd,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        (**self).partial_cmp(other)
+    }
+
+    fn lt(&self, other: &Self) -> bool {
+        (**self).lt(other)
+    }
+
+    fn le(&self, other: &Self) -> bool {
+        (**self).le(other)
+    }
+
+    fn ge(&self, other: &Self) -> bool {
+        (**self).ge(other)
+    }
+
+    fn gt(&self, other: &Self) -> bool {
+        (**self).gt(other)
+    }
+}
+
+impl<T: Copy, const CAP: usize> Ord for CopyArrayVec<T, CAP>
+where
+    T: Ord,
+{
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        (**self).cmp(other)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::ops::Deref;
